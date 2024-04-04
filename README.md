@@ -4,7 +4,7 @@
 
 | Tools  |  |
 | :--- | :--- |
-| Nest JS  | https://nextjs.org/  |
+| Next JS  | https://nextjs.org/  |
 | React Query | https://tanstack.com/query/v5  |
 | Chakra UI | https://chakra-ui.com |
 | etc |  |
