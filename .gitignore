@@ -1,3 +1,10 @@
+# Dokumen kerja internal — tidak ikut ke repo publik.
+# Sengaja di-ignore sebelum pernah di-commit: sekali masuk riwayat git, ia tidak
+# bisa ditarik kembali setelah repo dipublikasikan.
+/CLAUDE.md
+/PLAN.md
+/REPRODUCE.md
+
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies

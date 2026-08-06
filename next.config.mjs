@@ -1,20 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost'
-      },
-      {
-        protocol: 'https',
-        hostname: '**',
-        port: '',
-        pathname: '**',
-      },
-    ],
-  },  
+  // `images` sengaja dihapus, bukan terlupa.
+  // `next/image` tidak dipakai di mana pun, sementara pola lama
+  // { protocol: 'https', hostname: '**', pathname: '**' } membuat
+  // /_next/image jadi proxy gambar terbuka untuk siapa saja.
   async rewrites() {
     return [
       {
