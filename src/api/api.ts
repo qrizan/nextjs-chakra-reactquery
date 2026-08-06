@@ -1,8 +1,9 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { internalApiUrl } from '@/config';
 
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_BACKEND,
+    baseURL: internalApiUrl,
     headers: {
         "Accept": "application/json",
     }
@@ -31,11 +32,15 @@ api.interceptors.response.use(
 function handleUnauthorized() {
     Cookies.remove('token');
     Cookies.remove('user');
-    window.location.href = '/';
+    if (typeof window !== 'undefined') {
+        window.location.href = '/';
+    }
 }
 
 function handleForbidden() {
-    window.location.href = '/forbidden';
+    if (typeof window !== 'undefined') {
+        window.location.href = '/forbidden';
+    }
 }
 
 export default api;

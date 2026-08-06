@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'standalone',
   // `images` sengaja dihapus, bukan terlupa.
   // `next/image` tidak dipakai di mana pun, sementara pola lama
   // { protocol: 'https', hostname: '**', pathname: '**' } membuat

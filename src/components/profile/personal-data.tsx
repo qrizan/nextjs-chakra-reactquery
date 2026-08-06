@@ -16,6 +16,7 @@ import {
 import dayjs from "dayjs"
 
 import { IUserProfile } from '@/dtos/user.dto';
+import { apiUrl } from '@/config';
 
 interface IPersonalDataComponentProps {
   datauser: IUserProfile; 
@@ -38,7 +39,7 @@ const PersonalDataComponent = (props: IPersonalDataComponentProps) => {
         <Avatar 
           size='xl' 
           name={`${datauser.username}`} 
-          src={`${process.env.NEXT_PUBLIC_API_BACKEND}${datauser.avatar}`} >{' '}
+          src={`${apiUrl}${datauser.avatar}`} >{' '}
           <AvatarBadge 
             onClick={handleImageClick}
             borderColor="gray.900" 

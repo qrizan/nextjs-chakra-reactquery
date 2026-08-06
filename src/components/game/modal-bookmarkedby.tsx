@@ -17,6 +17,7 @@ import {
 import dayjs from "dayjs"
 
 import { IBookmarkedUser } from '@/dtos/bookmark.dto'
+import { apiUrl } from '@/config'
 
 interface IModalBookmarkedUserComponentProps { 
   onClose: () => void,
@@ -45,7 +46,7 @@ const ModalBookmarkedUserComponent = (props: IModalBookmarkedUserComponentProps 
           {
             dataBookmarkedUser && dataBookmarkedUser.map((item: IBookmarkedUser, index: Key) => (
               <Flex key={index} my={3} alignItems={'center'}>
-                <Avatar src={`${process.env.NEXT_PUBLIC_API_BACKEND}${item.user.avatar}`} />
+                <Avatar src={`${apiUrl}${item.user.avatar}`} />
                 <Box ml='3'>
                   <Text fontWeight='bold'>
                     {item.user.username}

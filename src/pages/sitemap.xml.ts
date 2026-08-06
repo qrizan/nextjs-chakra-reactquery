@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "@/api/api";
 
 
 function generateSiteMap(games: { slug: string; updatedAt: string; }[], host: string) {
@@ -33,7 +33,7 @@ function SiteMap() {
 }
 
 export async function getServerSideProps({ req, res }: any) {
-  const reqPosts = await axios.get(`${process.env.NEXT_PUBLIC_API_BACKEND}/public/games`)
+  const reqPosts = await api.get(`/public/games`)
   const resreqPosts = await reqPosts.data
 
   const host = `http://${req.headers.host}`;
