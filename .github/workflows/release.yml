@@ -70,9 +70,11 @@ jobs:
         with:
           image-ref: ${{ env.IMAGE }}:ci
           severity: HIGH,CRITICAL
-          # Pengecualian eksplisit per-CVE, lihat .trivyignore. Laporan
-          # lengkap di langkah sebelumnya tetap mencatat semuanya.
-          trivyignores: .trivyignore
+          # Mengecualikan seluruh paket next (lihat .trivy/ignore-policy.rego)
+          # — versi 14.2.35 dipertahankan sampai upgrade Next.js 15, dan
+          # daftar CVE per-ID basi tiap kali database Trivy diperbarui.
+          # Laporan lengkap di langkah sebelumnya tetap mencatat semuanya.
+          ignore-policy: .trivy/ignore-policy.rego
           # Hanya temuan yang punya versi perbaikan; sisanya tercatat di laporan.
           ignore-unfixed: true
           exit-code: '1'
