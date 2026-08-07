@@ -2,3 +2,8 @@ allowBuilds:
   unrs-resolver: true
 
 engineStrict: true
+
+# next@14.2.35 masih menarik postcss lama (CVE-2026-45623); patch tersedia
+# tanpa perlu upgrade Next.js.
+overrides:
+  postcss: ^8.5.12

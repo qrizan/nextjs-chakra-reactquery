@@ -1,0 +1,4 @@
+# CVE-2026-44573: next.js information disclosure via middleware, fixed in
+# Next.js 15.5.16 / 16.2.5. Deliberate, temporary exception pending the
+# Next.js 15 major upgrade — not silently ignored.
+CVE-2026-44573
