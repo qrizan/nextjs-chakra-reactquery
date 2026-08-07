@@ -1,0 +1,128 @@
+name: Release
+
+# Versi image berasal dari tag, sehingga tiap image dapat ditelusuri ke satu commit.
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+  packages: write
+  # Dipakai cosign untuk keyless signing lewat OIDC dan oleh attestation provenance.
+  id-token: write
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+  # Kedua pemberitahuan ini tidak menyampaikan apa pun tentang image yang dipindai.
+  TRIVY_DISABLE_VEX_NOTICE: 'true'
+  TRIVY_SKIP_VERSION_CHECK: 'true'
+
+# Action dipin ke commit SHA; komentar versi di sebelahnya untuk keterbacaan.
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE }}
+          # Tanpa tag `latest`; deployment merujuk versi atau digest.
+          flavor: latest=false
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      # Dimuat ke daemon lokal dulu supaya bisa dipindai sebelum di-push.
+      - name: Build image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          load: true
+          push: false
+          tags: ${{ env.IMAGE }}:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Dua langkah: yang pertama merekam seluruh temuan ke file tanpa
+      # menggagalkan, yang kedua menjadi gate dan hanya melihat yang ada patch-nya.
+      - name: Scan image (full report)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE }}:ci
+          format: json
+          output: trivy-report.json
+          exit-code: '0'
+
+      - name: Scan image (gate)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE }}:ci
+          severity: HIGH,CRITICAL
+          # Hanya temuan yang punya versi perbaikan; sisanya tercatat di laporan.
+          ignore-unfixed: true
+          exit-code: '1'
+
+      # `always()` supaya laporan tetap tersimpan ketika gate menolak.
+      - name: Upload scan report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: trivy-report-${{ github.ref_name }}
+          path: trivy-report.json
+          retention-days: 30
+
+      # Pemindaian hanya membaca isi image, tidak membuktikan image itu jalan
+      # dan meng-inject config runtime dengan benar. /robots.txt dipakai
+      # karena tidak memanggil backend, sama seperti HEALTHCHECK Dockerfile.
+      - name: Run image
+        env:
+          API_URL: https://api.example.invalid
+        run: |
+          docker run -d --name web -p 8080:8080 -e API_URL="$API_URL" "${IMAGE}:ci"
+          for _ in $(seq 30); do
+            curl -fsS http://localhost:8080/robots.txt >/dev/null && break
+            sleep 2
+          done
+          curl -fsS http://localhost:8080/robots.txt >/dev/null || {
+            echo 'image tidak melayani /robots.txt'
+            docker logs web
+            exit 1
+          }
+          curl -fsS http://localhost:8080/config.js | grep -qF "$API_URL" || {
+            echo 'config.js tidak memuat API_URL yang diinjeksikan saat container start'
+            docker logs web
+            exit 1
+          }
+          echo 'image melayani /robots.txt dan config.js berisi API_URL runtime'
+
+      - id: push
+        name: Push image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          sbom: true
+          provenance: mode=max
+
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Sign image
+        run: cosign sign --yes "${IMAGE}@${DIGEST}"
+        env:
+          IMAGE: ${{ env.IMAGE }}
+          DIGEST: ${{ steps.push.outputs.digest }}
