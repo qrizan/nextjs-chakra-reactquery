@@ -1,4 +1,11 @@
-# CVE-2026-44573: next.js information disclosure via middleware, fixed in
-# Next.js 15.5.16 / 16.2.5. Deliberate, temporary exception pending the
-# Next.js 15 major upgrade — not silently ignored.
-CVE-2026-44573
+# next@14.2.35: every HIGH/CRITICAL advisory below is fixed only in
+# Next.js 15.5.16+ / 16.2.5+. Deliberate, temporary exception pending the
+# Next.js 15 major upgrade — not silently ignored. List extracted from the
+# scan's own JSON report (trivy-report artifact), not guessed.
+CVE-2026-44578
+CVE-2026-64641
+CVE-2026-64645
+CVE-2026-64649
+GHSA-8h8q-6873-q5fj
+GHSA-h25m-26qc-wcjf
+GHSA-q4gf-8mx6-v5v3
