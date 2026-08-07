@@ -21,6 +21,14 @@ RUN pnpm build
 
 FROM node:22-bookworm-slim@sha256:d649c27dae7ba0137b3cef5dd75baa422c08dc3d9e3fc0c23dfb172dc3cc6436 AS runtime
 
+# npm, npx, dan corepack terbawa base image tapi tidak dipakai saat runtime:
+# aplikasi dijalankan dengan `node server.js` lewat entrypoint.sh.
+RUN rm -rf /usr/local/lib/node_modules/npm \
+           /usr/local/lib/node_modules/corepack \
+           /usr/local/bin/npm \
+           /usr/local/bin/npx \
+           /usr/local/bin/corepack
+
 ENV NODE_ENV=production
 WORKDIR /app
 
